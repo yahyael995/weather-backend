@@ -45,8 +45,8 @@ app.get('/weather', async (req, res) => {
 
     const tempUnit = units === 'fahrenheit' ? 'fahrenheit' : 'celsius';
     
-    // --- هذا هو السطر الذي تم إصلاحه بالكامل بناءً على تحليلك ---
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weathercode,wind_speed_10m&hourly=temperature_2m,apparent_temperature,weathercode,is_day,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&temperature_unit=${tempUnit}`;
+    // --- هذا هو السطر الذي تم إصلاحه بالكامل ---
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m&hourly=temperature_2m,apparent_temperature,weather_code,is_day,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&temperature_unit=${tempUnit}`;
     
     const weatherRes = await axios.get(weatherUrl );
 
