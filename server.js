@@ -1,16 +1,14 @@
-// D:\weather-backend\server.js (النسخة النهائية للنشر على Render)
+// D:\weather-backend\server.js (النسخة النهائية مع إصلاح اسم المتغير)
 
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 
 const app = express();
-// Render.com سيعطينا الـ PORT تلقائيًا، أو نستخدم 3001 كبديل
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 
-// هذا مسار بسيط للتأكد من أن الخادم يعمل
 app.get('/', (req, res) => {
   res.send('Weather Backend is running!');
 });
@@ -18,7 +16,6 @@ app.get('/', (req, res) => {
 app.get('/weather', async (req, res) => {
   const { city, lat, lon, units = 'celsius' } = req.query;
 
-  // هذا هو الإصلاح المنطقي: يجب أن يكون هناك مدينة أو إحداثيات
   if (!city && (!lat || !lon)) {
     return res.status(400).json({ error: 'City or coordinates are required' });
   }
@@ -27,7 +24,6 @@ app.get('/weather', async (req, res) => {
     let latitude, longitude, locationName, countryName;
 
     if (city) {
-      // منطق البحث عن المدينة (صحيح)
       const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`;
       const geoRes = await axios.get(geoUrl );
       if (!geoRes.data.results || geoRes.data.results.length === 0) {
@@ -38,10 +34,9 @@ app.get('/weather', async (req, res) => {
       longitude = cityData.longitude;
       locationName = cityData.name;
       countryName = cityData.country;
-    } else { // إذا لم تكن هناك مدينة، فبالتأكيد هناك إحداثيات
+    } else {
       latitude = lat;
       longitude = lon;
-      // سنحاول الحصول على اسم المدينة من الإحداثيات
       const reverseGeoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
       const reverseGeoRes = await axios.get(reverseGeoUrl );
       locationName = reverseGeoRes.data.city || `Lat: ${parseFloat(lat).toFixed(2)}`;
@@ -49,7 +44,9 @@ app.get('/weather', async (req, res) => {
     }
 
     const tempUnit = units === 'fahrenheit' ? 'fahrenheit' : 'celsius';
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relativehumidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m&hourly=temperature_2m,apparent_temperature,weathercode,is_day,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&temperature_unit=${tempUnit}`;
+    
+    // --- هذا هو السطر الذي تم إصلاحه ---
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weathercode,windspeed_10m&hourly=temperature_2m,apparent_temperature,weathercode,is_day,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&temperature_unit=${tempUnit}`;
     
     const weatherRes = await axios.get(weatherUrl );
 
@@ -61,7 +58,7 @@ app.get('/weather', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Backend Error:', error.message);
+    console.error('Backend Error:', error.response ? error.response.data : error.message);
     res.status(500).json({ error: 'Failed to fetch data from external API' });
   }
 });
