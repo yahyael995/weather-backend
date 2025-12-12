@@ -1,21 +1,29 @@
-// D:\weather-backend\server.js (النسخة النهائية مع الإصلاح النهائي)
+// D:\weather-backend\server.js (النسخة النهائية مع التوثيق)
 
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
+// --- 1. استيراد المكتبات الأساسية ---
+const express = require('express'); // لإدارة الخادم والمسارات (Routes)
+const axios = require('axios');   // لإجراء طلبات HTTP لجلب البيانات من واجهات برمجة التطبيقات الخارجية
+const cors = require('cors');     // للسماح للواجهة الأمامية (من نطاق مختلف) بالتحدث مع هذا الخادم
 
+// --- 2. إعداد الخادم ---
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3001; // استخدم المنفذ الذي يوفره Render، أو 3001 محليًا
 
+// --- 3. تفعيل CORS ---
+// هذا السطر يسمح لتطبيق Vercel (أو أي تطبيق آخر) بطلب البيانات من هذا الخادم
 app.use(cors());
 
+// --- 4. مسار افتراضي للتحقق من أن الخادم يعمل ---
 app.get('/', (req, res) => {
-  res.send('Weather Backend is running!');
+  res.send('✅ Weather Backend is running!');
 });
 
+// --- 5. المسار الرئيسي لجلب بيانات الطقس ---
 app.get('/weather', async (req, res) => {
+  // استخراج البيانات من رابط الطلب (Query Parameters)
   const { city, lat, lon, units = 'celsius' } = req.query;
 
+  // التحقق من وجود بيانات كافية (إما مدينة أو إحداثيات)
   if (!city && (!lat || !lon)) {
     return res.status(400).json({ error: 'City or coordinates are required' });
   }
@@ -23,7 +31,9 @@ app.get('/weather', async (req, res) => {
   try {
     let latitude, longitude, locationName, countryName;
 
+    // --- الجزء أ: تحديد الإحداثيات واسم الموقع ---
     if (city) {
+      // إذا تم توفير اسم مدينة، استخدم واجهة Geocoding لتحويله إلى إحداثيات
       const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`;
       const geoRes = await axios.get(geoUrl );
       if (!geoRes.data.results || geoRes.data.results.length === 0) {
@@ -35,6 +45,7 @@ app.get('/weather', async (req, res) => {
       locationName = cityData.name;
       countryName = cityData.country;
     } else {
+      // إذا تم توفير إحداثيات، استخدم واجهة Reverse Geocoding لتحويلها إلى اسم مدينة
       latitude = lat;
       longitude = lon;
       const reverseGeoUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
@@ -43,13 +54,13 @@ app.get('/weather', async (req, res) => {
       countryName = reverseGeoRes.data.countryName || `Lon: ${parseFloat(lon).toFixed(2)}`;
     }
 
+    // --- الجزء ب: جلب بيانات الطقس باستخدام الإحداثيات ---
     const tempUnit = units === 'fahrenheit' ? 'fahrenheit' : 'celsius';
-    
-    // --- هذا هو السطر الذي تم إصلاحه بالكامل ---
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weathercode,wind_speed_10m&hourly=temperature_2m,apparent_temperature,weathercode,is_day,precipitation_probability&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto&temperature_unit=${tempUnit}`;
     
     const weatherRes = await axios.get(weatherUrl );
 
+    // --- الجزء ج: تجميع وإرسال الاستجابة النهائية ---
     res.json({
       location: { name: locationName, country: countryName },
       current: weatherRes.data.current,
@@ -58,11 +69,13 @@ app.get('/weather', async (req, res) => {
     });
 
   } catch (error) {
+    // معالجة أي أخطاء تحدث أثناء العملية
     console.error('Backend Error:', error.response ? error.response.data : error.message);
     res.status(500).json({ error: 'Failed to fetch data from external API' });
   }
 });
 
+// --- 6. تشغيل الخادم ---
 app.listen(PORT, () => {
   console.log(`✅ Backend server is running on port ${PORT}`);
 });
