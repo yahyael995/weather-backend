@@ -1,33 +1,46 @@
-# 🌦️ Weather App Backend API
+# Weather React - Backend Server ⚙️
 
-This is the backend server for my Full-Stack Weather Application. It is built with Node.js and Express, and it serves weather data fetched from the Open-Meteo API.
+This is the backend server for the [Weather React](https://github.com/yahyael995/weather-react ) application. It's a simple Node.js server built with Express that acts as a proxy to fetch data from third-party weather APIs.
 
-## ✨ Features
-
--   **Express Server:** A lightweight and robust Node.js framework.
--   **Live Weather Data:** Fetches real-time forecast data.
--   **CORS Enabled:** Securely handles requests from the frontend application.
--   **Dynamic API:** Accepts latitude and longitude to provide weather for any location.
-
-## 🚀 Live URL
-
-This backend is deployed on Render and is live at:
-**[https://weather-backend-ogz2.onrender.com]** 
-*(Replace this with your actual Render URL: https://weather-backend-xxxx.onrender.com )*
-
-## 🛠️ Technologies Used
-
--   **Node.js:** JavaScript runtime environment.
--   **Express.js:** Web framework for Node.js.
--   **Axios:** For making HTTP requests to the weather API.
--   **CORS:** To enable cross-origin requests.
-
-## ⚙️ How to Run Locally
-
-1.  Clone the repository.
-2.  Install dependencies: `npm install`
-3.  Start the server: `node server.js`
-4.  The server will be running at `http://localhost:3001`.
+**➡️ [Live API Endpoint](https://weather-backend-final.onrender.com) ⬅️** 
+*(Replace with your actual Render URL)*
 
 ---
-*This project was built as part of an intensive learning journey. It represents a significant milestone in becoming a Full-Stack Developer.*
+
+## 🎯 Purpose
+
+The primary purpose of this server is to:
+1.  **Hide API Keys:** Securely handle requests to weather APIs without exposing sensitive keys on the client-side.
+2.  **Proxy Requests:** Act as an intermediary between the frontend application and the weather data providers (like Open-Meteo).
+3.  **Format Data:** Potentially format or combine data from multiple sources before sending it to the frontend (though currently it's a direct proxy).
+
+## 🛠️ Tech Stack
+
+*   **Framework:** [Express.js](https://expressjs.com/ )
+*   **HTTP Client:** [Axios](https://axios-http.com/ )
+*   **CORS Handling:** [cors](https://www.npmjs.com/package/cors )
+*   **Runtime:** [Node.js](https://nodejs.org/ )
+*   **Deployment:** [Render](https://render.com/ )
+
+## 🚀 Running Locally
+
+To run this server on your local machine, follow these steps:
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/weather-backend.git
+    cd weather-backend
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Start the server:**
+    ```bash
+    node server.js
+    ```
+    The server will start and be available at `http://localhost:3001`.
+
+---
