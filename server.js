@@ -69,10 +69,27 @@ app.get('/weather', async (req, res) => {
     });
 
   } catch (error) {
-    // معالجة أي أخطاء تحدث أثناء العملية
-    console.error('Backend Error:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'Failed to fetch data from external API' });
+  // Log the detailed error to the console on Render
+  console.error("--- BACKEND ERROR ---");
+  console.error("Timestamp:", new Date().toISOString());
+  console.error("Error Message:", error.message);
+
+  // Check if the error is from an external API (like Open-Meteo)
+  if (error.response) {
+    console.error("External API Status:", error.response.status);
+    console.error("External API Data:", error.response.data);
+  } else if (error.request) {
+    console.error("No response received from external API. Request details:", error.request);
+  } else {
+    console.error("Error setting up the request:", error.message);
   }
+  
+  console.error("--- END OF ERROR ---");
+
+  // Send a generic error message to the frontend
+  res.status(500).json({ error: 'Failed to fetch data from external API' });
+}
+
 });
 
 // --- 6. تشغيل الخادم ---
