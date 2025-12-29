@@ -1,8 +1,8 @@
-// D:\weather-backend\server.js (The Final Switch to WeatherAPI.com)
+// D:\weather-backend\server.js (The 100% Correct Data Structure Fix)
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-require('dotenv').config(); // To read the API key from environment variables
+require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -11,13 +11,13 @@ const apiKey = process.env.WEATHER_API_KEY;
 app.use(cors());
 
 app.get('/weather', async (req, res) => {
-  const { city, lat, lon } = req.query;
-
   if (!apiKey) {
     return res.status(500).json({ error: 'API Key is missing on the server.' });
   }
 
+  const { city, lat, lon } = req.query;
   let queryParam;
+
   if (city) {
     queryParam = city;
   } else if (lat && lon) {
@@ -32,7 +32,11 @@ app.get('/weather', async (req, res) => {
     const apiResponse = await axios.get(weatherUrl );
     const data = apiResponse.data;
 
-    // --- Data Transformation (to match our frontend's expectations) ---
+    // --- THE CRITICAL FIX IS HERE ---
+    // We need to filter the hourly data to only include hours from the current time onwards.
+    const now = new Date();
+    const relevantHours = data.forecast.forecastday[0].hour.filter(h => new Date(h.time_epoch * 1000) >= now);
+
     const responseData = {
       location: {
         name: data.location.name,
@@ -46,11 +50,12 @@ app.get('/weather', async (req, res) => {
         wind_speed_10m: data.current.wind_kph,
       },
       hourly: {
-        time: data.forecast.forecastday[0].hour.map(h => h.time),
-        temperature_2m: data.forecast.forecastday[0].hour.map(h => h.temp_c),
-        weather_code: data.forecast.forecastday[0].hour.map(h => h.condition.code),
-        is_day: data.forecast.forecastday[0].hour.map(h => h.is_day),
-        precipitation_probability: data.forecast.forecastday[0].hour.map(h => h.chance_of_rain),
+        // We now use the filtered 'relevantHours' array
+        time: relevantHours.map(h => h.time),
+        temperature_2m: relevantHours.map(h => h.temp_c),
+        weather_code: relevantHours.map(h => h.condition.code),
+        is_day: relevantHours.map(h => h.is_day),
+        precipitation_probability: relevantHours.map(h => h.chance_of_rain),
       },
       daily: {
         time: data.forecast.forecastday.map(d => d.date),
@@ -59,7 +64,7 @@ app.get('/weather', async (req, res) => {
         weather_code: data.forecast.forecastday.map(d => d.day.condition.code),
       },
     };
-    // --- End of Data Transformation ---
+    // --- END OF CRITICAL FIX ---
 
     res.json(responseData);
 
